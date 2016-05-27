@@ -1,7 +1,7 @@
 # This is the program that learns using N-grams and identifies the language of
 # each of the development set
 
-import sys
+import sys, os
 
 # Strips the given file and uses the tokenizer
 # def preprocess():
