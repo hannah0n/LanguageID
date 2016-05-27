@@ -1,0 +1,32 @@
+Basic Outline of Our Project
+
+/////////////////////////////////////////////////////////////////////////////
+/// TOPIC  
+/////////////////////////////////////////////////////////////////////////////
+
+In our project we are doing language ID identification. In particular we're
+going to look at two language groups and another unrelated language that all use
+latin script and measure how well we can identify each language.
+
+/////////////////////////////////////////////////////////////////////////////
+/// INPUT DATA 
+/////////////////////////////////////////////////////////////////////////////
+
+Our input data will be a couple selected chapters from Bibles in each language
+written roughly around the same time period. Our sources will include the web
+and the training data consists of simply storing each verse in a language
+specific folder. These files will be tokenized using our sentence tokenizer and
+then be split in training/test data for reading in.
+
+/////////////////////////////////////////////////////////////////////////////
+/// OUTPUT FORMAT 
+/////////////////////////////////////////////////////////////////////////////
+
+The output format is simply each line in the test set labelled with the language
+predicted by the N-gram model.
+
+/////////////////////////////////////////////////////////////////////////////
+/// EVALUATION 
+/////////////////////////////////////////////////////////////////////////////
+
+Precision/Recall both language-specifically and language group specifically.
