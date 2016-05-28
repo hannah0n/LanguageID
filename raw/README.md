@@ -3,8 +3,11 @@
 This folder holds the raw text we extracted for each language before being
 processed into a consistent format.
 
+
 ## Language Codes (ISO-639-1 Standard)
+
 Code | Language | Group
+--- | --- | ---
 ca | Catalan | Italic-Romance
 da | Danish | Germanic
 de | German | Germanic
