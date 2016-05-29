@@ -6,25 +6,25 @@ on Italic-Romance languages, Germanic languages, and the non-related language Ta
 
 ## Language Codes (ISO-639-1 Standard)
 
-Code | Language | Group 
---- | --- | ---
-ca | Catalan | Italic-Romance 
+Code | Language | Group | Version Used
+--- | --- | --- | ---
+ca | Catalan | Italic-Romance | Bíblia Catalana Interconfessional
 da | Danish | Germanic 
-de | German | Germanic  
-en | English | Germanic  
-es | Spanish | Italic-Romance  
-fo | Faroese | Germanic  
-fr | French | Italic-Romance  
-is | Icelandic | Germanic  
-it | Italian | Italic-Romance  
-la | Latin | Italic-Romance  
-nb | Norwegian Bokmal | Germanic  
-nl | Dutch | Germanic  
-nn | Norwegian Nynorsk | Germanic  
-pt | Portuguese | Italic-Romance  
-ro | Romanian | Italic-Romance  
-sv | Swedish | Germanic  
-tl | Tagalog | Other  
+de | German | Germanic | Schlachter 2000 
+en | English | Germanic 
+es | Spanish | Italic-Romance | Reina-Valera 1960
+fo | Faroese | Germanic 
+fr | French | Italic-Romance | Louis Segond
+is | Icelandic | Germanic 
+it | Italian | Italic-Romance | La Nuova Diodati
+la | Latin | Italic-Romance | Biblia Sacra Vulgata
+nb | Norwegian Bokmal | Germanic 
+nl | Dutch | Germanic 
+nn | Norwegian Nynorsk | Germanic 
+pt | Portuguese | Italic-Romance | Almeida Revista e Corrigida 2009
+ro | Romanian | Italic-Romance | Cornilescu 1924 - Revised 2010, 2014
+sv | Swedish | Germanic 
+tl | Tagalog | Other | Ang Dating Biblia (1905)
 
 ## Chapters Used
 Book | Chapter
