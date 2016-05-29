@@ -4,7 +4,7 @@
 import sys, os, analysis
 from optparse import OptionParser
 
-langs = "ca da de en es fo fr is it la nb nl nn pt ro sv tl".split()
+langs = "ca da de en es fr is it la nl no pt ro sv tl".split()
 
 def loadOptions():
     """Sets up the command line options"""
@@ -20,16 +20,23 @@ def main():
     # Train & Develop Model
     models = {}
     for lang in langs:
-        models[lang] = train(lang)
+        if lang != "tl":
+            models[lang] = train(lang)
 
     # Run Model on Development set
     predictions = []
     with open("dev.txt") as f:
         for line in f.readlines():
-            predictions.append(predict(line) + " " + line)
+            predictions.append(predict(line.split("\t", 1)[1]) + "\t" + line)
+    
+    with open("results.txt", "w") as f:
+        f.writelines(predictions)
+
+    print("Check results.txt for the prediction results. The Precision and\
+            Recall need to be implemented")
 
     # Calculate the Precision and Recall
-    
+    # TODO:
 
     # Optionally run on Test set
     pass
