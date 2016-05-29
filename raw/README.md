@@ -15,7 +15,6 @@ es | Spanish | Italic-Romance
 fo | Faroese | Germanic  
 fr | French | Italic-Romance  
 fy | Frisian | Germanic  
-id | Indonesian | Other  
 is | Icelandic | Germanic  
 it | Italian | Italic-Romance  
 la | Latin | Italic-Romance  
@@ -25,6 +24,7 @@ nn | Norwegian Nynorsk | Germanic
 pt | Portuguese | Italic-Romance  
 ro | Romanian | Italic-Romance  
 sv | Swedish | Germanic  
+tl | Tagalog | Other  
 
 ## Chapters Used
 Book | Chapter
