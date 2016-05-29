@@ -73,7 +73,7 @@ def usage(program):
     print "usage:", program, "[lang_code]+"
 
 def main(args):
-    langs = "ca da de en es fo fr fy is it la nb nl nn pt ro sv tl".split()
+    langs = "ca da de en es fo fr is it la nb nl nn pt ro sv tl".split()
     if len(args) > 1:
         for lang in args[1:]:
             if lang not in langs:

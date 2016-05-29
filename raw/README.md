@@ -1,45 +1,23 @@
 # Raw Text Folder
 
 This folder holds the raw text we extracted for each language before being
-processed into a consistent format.
+preprocessed into a consistent format.
 
-## Language Codes (ISO-639-1 Standard)
+## Constraints
 
-Code | Language | Group 
---- | --- | ---
-ca | Catalan | Italic-Romance 
-da | Danish | Germanic 
-de | German | Germanic  
-en | English | Germanic  
-es | Spanish | Italic-Romance  
-fo | Faroese | Germanic  
-fr | French | Italic-Romance  
-fy | Frisian | Germanic  
-is | Icelandic | Germanic  
-it | Italian | Italic-Romance  
-la | Latin | Italic-Romance  
-nb | Norwegian Bokmal | Germanic  
-nl | Dutch | Germanic  
-nn | Norwegian Nynorsk | Germanic  
-pt | Portuguese | Italic-Romance  
-ro | Romanian | Italic-Romance  
-sv | Swedish | Germanic  
-tl | Tagalog | Other  
+In order to preprocess text into a consistent we ensured the following:
+- Each verse was part of a line that started with a number.
+- Non-verse text was part of lines that didn't begin with a number.
 
-## Chapters Used
-Book | Chapter
---- | ---
-Genesis | 1
-Exodus | 20
-1 Kings | 17
-Psalm | 119
-Isaiah | 53
-Daniel | 6
-Habakkuk | 2
-Matthew | 6
-Mark | 10
-John | 1
-John | 3
-Romans | 12
-Galatians | 5
-Colossians | 6
+## Compress.py
+
+In cases where the constraints weren't met by copying and pasting we removed the
+non-verse text and ran the compress.py to compress verses spanning multiple
+lines into one line. For example, the following line:
+
+`2 Ferice de cei ce păzesc mărturiile Lui
+    şi-L caută din toată inima:`
+
+would be compressed into :
+
+`2 Ferice de cei ce păzesc mărturiile Lui şi-L caută din toată inima:`
