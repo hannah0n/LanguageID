@@ -39,7 +39,7 @@ def main():
     
 
     # Optionally run on Test set
-    pass
+    predict(line, models, unk, prob, predictions)
 
 def train(models, totalCount, unk):
     """
@@ -123,6 +123,7 @@ def predict(line, models, unk, prob, predictions):
                 num += unigram.get(char) * unk.get(lang)
         prob[lang] = num
     predictions  = sorted(prob.items(), key=operator.itemgetter(1))
+    return predictions
 if __name__ == "__main__":
     main()
 #comment
