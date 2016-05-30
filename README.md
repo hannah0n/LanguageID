@@ -10,20 +10,19 @@ Code | Language | Group | Version Used
 --- | --- | --- | ---
 ca | Catalan | Italic-Romance | Bíblia Catalana Interconfessional (BCI)
 da | Danish | Germanic | Bibelen på hverdagsdansk (BPH)
-de | German | Germanic | Schlachter 2000 
-en | English | Germanic 
+de | German | Germanic | Schlachter 2000 (SCH2000)
+en | English | Germanic | 21st Century King James Version (KJ21)
 es | Spanish | Italic-Romance | Reina-Valera 1960 (RVR1960)
-fo | Faroese | Germanic 
-fr | French | Italic-Romance | Louis Segond
-is | Icelandic | Germanic 
-it | Italian | Italic-Romance | La Nuova Diodati
-la | Latin | Italic-Romance | Biblia Sacra Vulgata
+fr | French | Italic-Romance | Louis Segond (LSG)
+is | Icelandic | Germanic | Icelandic Bible (ICELAND)
+it | Italian | Italic-Romance | La Nuova Diodati (LND)
+la | Latin | Italic-Romance | Biblia Sacra Vulgata (VULGATE)
 nl | Dutch | Germanic | Het Boek (HTB)
-nn | Norwegian | Germanic | En Levende Bok (LB)
-pt | Portuguese | Italic-Romance | Almeida Revista e Corrigida 2009
-ro | Romanian | Italic-Romance | Cornilescu 1924 - Revised 2010, 2014
+no | Norwegian | Germanic | En Levende Bok (LB)
+pt | Portuguese | Italic-Romance | Almeida Revista e Corrigida 2009 (ARC)
+ro | Romanian | Italic-Romance | Cornilescu 1924 - Revised 2010, 2014 (RMNN)
 sv | Swedish | Germanic | Nya Levande Bibeln (SVL)
-tl | Tagalog | Other | Ang Dating Biblia (1905)
+tl | Tagalog | Other | Ang Dating Biblia (1905) (ADB1905)
 
 ## Chapters Used
 Book | Chapter
