@@ -1,0 +1,21 @@
+Check results.txt for the prediction results. The Precision and Recall need to be implemented
+Lang 	Prec. 	Recall 	F1 Score
+ca 	0.772 	0.767 	0.770
+da 	0.776 	0.623 	0.691
+de 	0.871 	0.931 	0.900
+en 	0.941 	0.897 	0.919
+es 	0.852 	0.882 	0.867
+fr 	0.707 	0.804 	0.752
+is 	0.973 	0.948 	0.960
+it 	0.870 	0.839 	0.854
+la 	1.000 	1.000 	1.000
+nl 	0.910 	0.955 	0.932
+no 	0.759 	0.799 	0.778
+pt 	0.863 	0.824 	0.843
+ro 	0.984 	0.953 	0.968
+sv 	0.952 	0.930 	0.941
+tl 	0.000 	0.000 	0.000
+
+Weighted Average Precision: 0.870
+Weighted Average Recall: 0.868
+Weighted Average F1 Score: 0.868
