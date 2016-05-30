@@ -23,21 +23,21 @@ def main():
             langs[trueLang]["FN"] += 1
             langs[predLang]["FP"] += 1
 
-    print("Lang \tPrec. \tRecall \tF1 Score")
-    for lang, d in langs.iteritems():
-        if d["TP"] + d["FP"] > 0:
-            Precision = d["TP"] / (d["TP"] + d["FP"])
-        else:
-            Precision = 0.0
-        if d["TP"] + d["FN"] > 0:
-            Recall = d["TP"] / (d["TP"] + d["FN"])
-        else:
-            Recall = 0.0
-        if Precision + Recall > 0:
-            F1Score = (2 * Precision * Recall) / (Precision + Recall)
-        else:
-            F1Score = 0.0
-        print("%s \t%.2f \t%.2f \t%.2f" % (lang, Precision, Recall, F1Score))
+    print("Lang \tPrec. \trecall \tF1 Score")
+    for lang in langs:
+        d = langs[lang]
+        returned = d["TP"] + d["FP"]
+        expected = d["TP"] + d["FN"]
+        d["P"] = 0.0 if returned == 0 else d["TP"] / returned
+        d["R"] = 0.0 if expected == 0 else d["TP"] / expected
+        d["F1"] = 0.0 if d["P"] + d["R"] == 0 else (2 * d["P"] * d["R"]) / (d["P"] + d["R"])
+        print("%s \t%.2f \t%.2f \t%.2f" % (lang, d["P"], d["R"], d["F1"]))
+
+    print()
+    print("Average P: %.2f Average R: %.2f Average F1: %.2f" 
+            % (sum([l["P"] for l in langs.values()]) / len(langs),
+               sum([l["R"] for l in langs.values()]) / len(langs),
+               sum([l["F1"] for l in langs.values()]) / len(langs)))
 
 if __name__ == "__main__":
     main()

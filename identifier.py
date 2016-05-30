@@ -3,9 +3,8 @@
 
 import sys, re, os, analysis, operator
 from optparse import OptionParser
-from socket import p
 
-langs = "ca da de en es fo fr is it la nb nl nn pt ro sv tl".split()
+langs = "ca da de en es fr is it la nl no pt ro sv tl".split()
 
 def loadOptions():
     """Sets up the command line options"""
@@ -17,11 +16,8 @@ def loadOptions():
             action="store_true")
     return parser.parse_args()
 
-verbose=False
-
 def main():
     options, args = loadOptions()
-    verbose = options.verbose
     # Train & Develop Model
     models = {}
     totalCount = {}
@@ -41,7 +37,8 @@ def main():
             if options.verbose:
                 print("PREDICTION: " + str(prediction))
                 print("LINE: " + line)
-            predictions.append(prediction[0][0])
+            prediction.sort(key=lambda a: -a[1])
+            predictions.append(prediction[1][0])
 
 #     print(predictions)
     with open("results.txt", "w") as f:
@@ -71,28 +68,33 @@ def train(models, totalCount, unk):
     with open("training.txt") as f:
         # be sure to skip any whitespace characters
         for line in f.readlines():
-            if (line.split()[0]) in models: #necessary??
-                language = line.split()[0]
-                script = line.split('\t',1)[1]
-                script = script.replace("\t", "").replace(" ", "")
-                if not (models.get(language)):
-                    unigram = {script[0]:0}
-                    models[language] = unigram
+            language = line.split()[0]
+            script = line.split('\t',1)[1]
+            script = script.strip().replace("\t", "").replace(" ", "")
+            if not (models.get(language)):
+                unigram = {script[0]:0}
+                models[language] = unigram
+            else:
+                unigram = models.get(language)
+            for i in range(0, len(script)):
+                cha = script[i]
+                if cha in unigram:
+                    unigram[cha] += 1
                 else:
-                    unigram = models.get(language)
-                for i in range(0, len(script)):
-                    cha = script[i]
-                    if cha in unigram:
-                        unigram[cha] += 1
-                    else:
-                        unigram[cha] = 1
-                totalCount[language] += len(script)
+                    unigram[cha] = 1
+            totalCount[language] += len(script)
         f.close()
     for l in models:
         for c in models[l]:
-            (models[l])[c] = (models[l])[c] / totalCount[l]
+            (models[l])[c] = (models[l])[c] / float(totalCount[l])
             if (models[l])[c] < unk[l]:
                 unk[l] = (models[l])[c]
+
+#     for l, m in models.iteritems():
+#         print("LANG: " + l)
+#         print(sum(m.values()))
+#         for c, p in m.iteritems():
+#             print("  %s: %f" % (c, p))
         #Train data
 
 def probability(line, models):
@@ -116,9 +118,8 @@ def predict(line, models, unk, prob):
 
     Returns the most likely language
     """
-    script= line.replace("\t", "").replace(" ", "")
+    script= line.strip().replace("\t", "").replace(" ", "")
     unigram = {}
-    num = 0
     for i in range(0, len(script)):
         if not (unigram):
             unigram = {script[0]: 0}
@@ -128,8 +129,9 @@ def predict(line, models, unk, prob):
         else:
             unigram[cha] = 1
     for lang in models:
+        num = 0
         for char in unigram:
-            if (models.get(lang)).has_key(char):
+            if char in models[lang]:
                 num += unigram.get(char) * (models.get(lang)).get(char)
             else:
                 num += unigram.get(char) * unk.get(lang)
