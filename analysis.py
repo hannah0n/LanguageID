@@ -14,7 +14,7 @@ def main():
         # Create a dictionary to store counts for P/R calculation
         langs[k] = {"TP":0.0, "FP":0.0, "FN":0.0}
 
-    for i in key.indices():
+    for i in range(0, len(key)):
         trueLang = key[i].split()[0]
         predLang = results[i].split()[0]
         if predLang == trueLang:
@@ -23,11 +23,20 @@ def main():
             langs[trueLang]["FN"] += 1
             langs[predLang]["FP"] += 1
 
-    print("Language \tPrecision \tRecall \tF-1 Score")
+    print("Lang \tPrec. \tRecall \tF1 Score")
     for lang, d in langs.iteritems():
-        Precision = d["TP"] / (d["TP"] + d["FP"])
-        Recall = d["TP"] / (d["TP"] + d["FN"])
-        F1Score = (2 * Precision * Recall) / (Precision + Recall)
+        if d["TP"] + d["FP"] > 0:
+            Precision = d["TP"] / (d["TP"] + d["FP"])
+        else:
+            Precision = 0.0
+        if d["TP"] + d["FN"] > 0:
+            Recall = d["TP"] / (d["TP"] + d["FN"])
+        else:
+            Recall = 0.0
+        if Precision + Recall > 0:
+            F1Score = (2 * Precision * Recall) / (Precision + Recall)
+        else:
+            F1Score = 0.0
         print("%s \t%.2f \t%.2f \t%.2f" % (lang, Precision, Recall, F1Score))
 
 if __name__ == "__main__":

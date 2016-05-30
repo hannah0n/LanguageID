@@ -12,12 +12,16 @@ def loadOptions():
     parser = OptionParser(usage="usage %prog [options]")
     parser.add_option("-i", "--interactive", help="allows for user interaction",
             action="store_true")
-    parser.add_option("-v", "--verbose", help="Outputs verbose information",
+    parser.add_option("-v", "--verbose", help="Outputs verbose information\
+            (useful for debugging)",
             action="store_true")
     return parser.parse_args()
 
+verbose=False
+
 def main():
     options, args = loadOptions()
+    verbose = options.verbose
     # Train & Develop Model
     models = {}
     totalCount = {}
@@ -28,18 +32,28 @@ def main():
         totalCount[lang] = 0
         unk[lang] = 100
     prob = totalCount
-    train(models)
+    train(models, totalCount, unk)
     # Run Model on Development set
     predictions = []
     with open("dev.txt") as f:
         for line in f.readlines():
-            predictions.append(predict(line) + " " + line)
+            prediction = predict(line.split("\t", 1)[1], models, unk, prob)
+            if options.verbose:
+                print("PREDICTION: " + str(prediction))
+                print("LINE: " + line)
+            predictions.append(prediction[0][0])
+
+#     print(predictions)
+    with open("results.txt", "w") as f:
+        f.write("\n".join(predictions))
+
+    print("Check results.txt for the prediction results. The Precision and Recall need to be implemented")
 
     # Calculate the Precision and Recall
-    
+    analysis.main()
 
     # Optionally run on Test set
-    predict(line, models, unk, prob, predictions)
+#     predictions = predict(line, models, unk, prob)
 
 def train(models, totalCount, unk):
     """
@@ -59,7 +73,7 @@ def train(models, totalCount, unk):
         for line in f.readlines():
             if (line.split()[0]) in models: #necessary??
                 language = line.split()[0]
-                script = line.split(' ',1)[1]
+                script = line.split('\t',1)[1]
                 script = script.replace("\t", "").replace(" ", "")
                 if not (models.get(language)):
                     unigram = {script[0]:0}
@@ -75,10 +89,10 @@ def train(models, totalCount, unk):
                 totalCount[language] += len(script)
         f.close()
     for l in models:
-        for c in models.get[l]:
-            (models.get[l])[c] = (models.get[l]).get[c] / totalCount[l]
-            if (models.get[l]).get[c] < unk.get[l]:
-                unk[l] = (models.get[l]).get[c]
+        for c in models[l]:
+            (models[l])[c] = (models[l])[c] / totalCount[l]
+            if (models[l])[c] < unk[l]:
+                unk[l] = (models[l])[c]
         #Train data
 
 def probability(line, models):
@@ -93,7 +107,7 @@ def probability(line, models):
     ;5"""
     pass
 
-def predict(line, models, unk, prob, predictions):
+def predict(line, models, unk, prob):
     """
     This function predicts the language for the given line.
 
@@ -102,9 +116,7 @@ def predict(line, models, unk, prob, predictions):
 
     Returns the most likely language
     """
-    language = line.split()[0]
-    script = line.split(' ', 1)[1]
-    script = script.replace("\t", "").replace(" ", "")
+    script= line.replace("\t", "").replace(" ", "")
     unigram = {}
     num = 0
     for i in range(0, len(script)):
@@ -122,8 +134,9 @@ def predict(line, models, unk, prob, predictions):
             else:
                 num += unigram.get(char) * unk.get(lang)
         prob[lang] = num
-    predictions  = sorted(prob.items(), key=operator.itemgetter(1))
+    predictions = sorted(prob.items(), key=operator.itemgetter(1))
     return predictions
+
 if __name__ == "__main__":
     main()
 #comment
