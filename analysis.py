@@ -1,8 +1,8 @@
 # This is the file used for analysis tools including different precision and
 # recall measurements
 
-def main():
-    keyf = open("dev.txt")
+def main(testFile):
+    keyf = open(testFile)
     resultsf = open("results.txt")
     key = keyf.readlines()
     results = resultsf.readlines()

@@ -11,8 +11,10 @@ def loadOptions():
     parser = OptionParser(usage="usage %prog [options]")
     parser.add_option("-i", "--interactive", help="allows for user interaction",
             action="store_true")
-    parser.add_option("-v", "--verbose", help="Outputs verbose information\
-            (useful for debugging)",
+    parser.add_option("-v", "--verbose", help="outputs verbose information "
+            "(useful for debugging)",
+            action="store_true")
+    parser.add_option("-t", "--test", help="run against test data",
             action="store_true")
     return parser.parse_args()
 
@@ -21,38 +23,42 @@ def main():
     # Train & Develop Model
     models = {}
     totalCount = {}
-    unk = {}
     prob = {}
     for lang in langs:
         models[lang] = {}
         totalCount[lang] = 0
-        unk[lang] = 100
     prob = totalCount
-    train(models, totalCount, unk)
+    train(models, totalCount)
     # Run Model on Development set
     predictions = []
-    with open("dev.txt") as f:
+    testFile = "test.txt" if options.test else "dev.txt"
+    with open(testFile) as f:
         for line in f.readlines():
-            prediction = predict(line.split("\t", 1)[1], models, unk, prob)
-            if options.verbose:
-                print("PREDICTION: " + str(prediction))
-                print("LINE: " + line)
+            prediction = predict(line.split("\t", 1)[1], models, prob)
             prediction.sort(key=lambda a: -a[1])
+            if options.verbose:
+                print("PREDICTION:", prediction)
+                print("LINE: " + line)
             predictions.append(prediction[0][0])
 
-#     print(predictions)
     with open("results.txt", "w") as f:
         f.write("\n".join(predictions))
 
     print("Check results.txt for the prediction results. The Precision and Recall need to be implemented")
 
     # Calculate the Precision and Recall
-    analysis.main()
+    analysis.main(testFile)
 
-    # Optionally run on Test set
-#     predictions = predict(line, models, unk, prob)
+    if options.interactive:
+        while True:
+            line = raw_input("Line to parse: ")
+            prediction = predict(line, models, prob)
+            prediction.sort(key=lambda a: -a[1])
+            for p in prediction:
+                print('  %s : %.3e' % p)
 
-def train(models, totalCount, unk):
+
+def train(models, totalCount):
     """
     This function creates a unigram frequency model for the given language
     
@@ -110,7 +116,7 @@ def probability(line, models):
     ;5"""
     pass
 
-def predict(line, models, unk, prob):
+def predict(line, models, prob):
     """
     This function predicts the language for the given line.
 
@@ -128,7 +134,7 @@ def predict(line, models, unk, prob):
             else:
                 num *= models[lang]["UNK"]
         prob[lang] = num
-    return sorted(prob.items(), key=lambda kv: kv[1])
+    return prob.items()
 
 if __name__ == "__main__":
     main()
