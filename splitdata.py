@@ -10,7 +10,10 @@ def main():
     for lang in langs:
         with open("data/%s.txt" % lang) as f:
             if lang == "tl":
-                for l in f: testf.write(l)
+                for l in f:
+                    n = randint(1, 10)
+                    # In stage 1 we are not concerned with identifying Tagalog
+                    testf.write(lang + "\t" + l)
             else:
                 for l in f:
                     n = randint(1, 10)
