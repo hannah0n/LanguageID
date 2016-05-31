@@ -44,7 +44,7 @@ def main():
     with open("results.txt", "w") as f:
         f.write("\n".join(predictions))
 
-    print("Check results.txt for the prediction results. The Precision and Recall need to be implemented")
+    print("Check results.txt for the prediction results.")
 
     # Calculate the Precision and Recall
     analysis.main(testFile)

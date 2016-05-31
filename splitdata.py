@@ -3,7 +3,8 @@
 from random import randint
 
 def main():
-    langs = "ca da de en es fr is it la no nl pt ro sv tl".split()
+    # Ignoring tagalog for stage 1
+    langs = "ca da de en es fr is it la no nl pt ro sv".split()
     trainf = open("training.txt", "w")
     testf = open("test.txt", "w")
     devf = open("dev.txt", "w")
