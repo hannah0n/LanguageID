@@ -3,14 +3,18 @@
 from random import randint
 
 def main():
-    langs = "ca da de en es fr is it la no nl pt ro sv tl".split()
+    # Ignoring tagalog for stage 1
+    langs = "ca da de en es fr is it la no nl pt ro sv".split()
     trainf = open("training.txt", "w")
     testf = open("test.txt", "w")
     devf = open("dev.txt", "w")
     for lang in langs:
         with open("data/%s.txt" % lang) as f:
             if lang == "tl":
-                for l in f: testf.write(l)
+                for l in f:
+                    n = randint(1, 10)
+                    # In stage 1 we are not concerned with identifying Tagalog
+                    testf.write(lang + "\t" + l)
             else:
                 for l in f:
                     n = randint(1, 10)

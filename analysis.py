@@ -1,9 +1,9 @@
 # This is the file used for analysis tools including different precision and
 # recall measurements
 
-def main():
-    keyf = open("dev.txt")
-    resultsf = open("results.txt")
+def main(testFile="dev.txt", resultsFile="results.txt"):
+    keyf = open(testFile)
+    resultsf = open(resultsFile)
     key = keyf.readlines()
     results = resultsf.readlines()
     keyf.close()
@@ -14,6 +14,8 @@ def main():
         # Create a dictionary to store counts for P/R calculation
         langs[k] = {"TP":0.0, "FP":0.0, "FN":0.0}
 
+    counts = {"tl":0}
+
     for i in range(0, len(key)):
         trueLang = key[i].split()[0]
         predLang = results[i].split()[0]
@@ -22,22 +24,40 @@ def main():
         else:
             langs[trueLang]["FN"] += 1
             langs[predLang]["FP"] += 1
+        if trueLang in counts:
+            counts[trueLang] += 1
+        else: 
+            counts[trueLang] = 1
 
     print("Lang \tPrec. \tRecall \tF1 Score")
-    for lang, d in langs.iteritems():
-        if d["TP"] + d["FP"] > 0:
-            Precision = d["TP"] / (d["TP"] + d["FP"])
-        else:
-            Precision = 0.0
-        if d["TP"] + d["FN"] > 0:
-            Recall = d["TP"] / (d["TP"] + d["FN"])
-        else:
-            Recall = 0.0
-        if Precision + Recall > 0:
-            F1Score = (2 * Precision * Recall) / (Precision + Recall)
-        else:
-            F1Score = 0.0
-        print("%s \t%.2f \t%.2f \t%.2f" % (lang, Precision, Recall, F1Score))
+    for lang in "ca da de en es fr is it la nl no pt ro sv tl".split():
+        d = langs[lang]
+        returned = d["TP"] + d["FP"]
+        expected = d["TP"] + d["FN"]
+        d["P"] = 0.0 if returned == 0 else d["TP"] / returned
+        d["R"] = 0.0 if expected == 0 else d["TP"] / expected
+        d["F1"] = 0.0 if d["P"] + d["R"] == 0 else 2 * d["P"] * d["R"] / (d["P"] + d["R"])
+        print("%s \t%.3f \t%.3f \t%.3f" % (lang, d["P"], d["R"], d["F1"]))
+
+    print("")
+
+    # Print the weighted average
+    weighted_precision = 0.0
+    weighted_recall = 0.0
+    weighted_f1 = 0.0
+    for lang in langs:
+        values = langs[lang]
+        weighted_precision += values["P"] * counts[lang]
+        weighted_recall += values["R"] * counts[lang]
+        weighted_f1 += values["F1"] * counts[lang]
+
+    weighted_precision = weighted_precision / sum(counts.values())
+    weighted_recall = weighted_recall / sum(counts.values())
+    weighted_f1 = weighted_f1 / sum(counts.values())
+
+    print("Weighted Average Precision: %.3f" % weighted_precision)
+    print("Weighted Average Recall: %.3f" % weighted_recall)
+    print("Weighted Average F1 Score: %.3f" % weighted_f1)
 
 if __name__ == "__main__":
     main()
