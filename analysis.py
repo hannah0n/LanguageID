@@ -10,7 +10,7 @@ def main(testFile="dev.txt", resultsFile=None, ignoretl=True):
     results = resultsf.readlines()
     keyf.close()
     resultsf.close()
-    print("KEY: %s\bPREDICTIONS: %s" % (testFile, resultsFile))
+    print("KEY: %s\nPREDICTIONS: %s" % (testFile, resultsFile))
 
     langs = {}
     for k in "ca da de en es fr is it la nl no pt ro sv tl".split():
