@@ -1,13 +1,16 @@
 # This is the file used for analysis tools including different precision and
 # recall measurements
 
-def main(testFile="dev.txt", resultsFile="results.txt"):
+def main(testFile="dev.txt", resultsFile=None, ignoretl=True):
+    if not resultsFile:
+        resultsFile = testFile + ".out"
     keyf = open(testFile)
     resultsf = open(resultsFile)
     key = keyf.readlines()
     results = resultsf.readlines()
     keyf.close()
     resultsf.close()
+    print("KEY: %s\bPREDICTIONS: %s" % (testFile, resultsFile))
 
     langs = {}
     for k in "ca da de en es fr is it la nl no pt ro sv tl".split():
@@ -19,6 +22,8 @@ def main(testFile="dev.txt", resultsFile="results.txt"):
     for i in range(0, len(key)):
         trueLang = key[i].split()[0]
         predLang = results[i].split()[0]
+        if trueLang == "tl" and ignoretl:
+            continue    # Don't let it be part of the calculation
         if predLang == trueLang:
             langs[trueLang]["TP"] += 1
         else:
@@ -31,6 +36,8 @@ def main(testFile="dev.txt", resultsFile="results.txt"):
 
     print("Lang \tPrec. \tRecall \tF1 Score")
     for lang in "ca da de en es fr is it la nl no pt ro sv tl".split():
+        if lang == "tl" and ignoretl:
+            continue
         d = langs[lang]
         returned = d["TP"] + d["FP"]
         expected = d["TP"] + d["FN"]
@@ -46,6 +53,8 @@ def main(testFile="dev.txt", resultsFile="results.txt"):
     weighted_recall = 0.0
     weighted_f1 = 0.0
     for lang in langs:
+        if lang == "tl" and ignoretl:
+            continue
         values = langs[lang]
         weighted_precision += values["P"] * counts[lang]
         weighted_recall += values["R"] * counts[lang]
@@ -57,7 +66,7 @@ def main(testFile="dev.txt", resultsFile="results.txt"):
 
     print("Weighted Average Precision: %.3f" % weighted_precision)
     print("Weighted Average Recall: %.3f" % weighted_recall)
-    print("Weighted Average F1 Score: %.3f" % weighted_f1)
+    print("Weighted Average F1 Score: %.3f\n" % weighted_f1)
 
 if __name__ == "__main__":
-    main()
+    main(raw_input("KEY file: "), raw_input("PREDICTIONS file: "))

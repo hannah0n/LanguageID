@@ -29,7 +29,20 @@ def main():
         totalCount[lang] = 0
     prob = totalCount
     train(models, totalCount)
-    # Run Model on Development set
+
+    # Run Model on Training Set
+    predictions = []
+    testFile = "training.txt"
+    with open(testFile) as f:
+        for line in f:
+            prediction = predict(line.split("\t", 1)[1], models, prob)
+            prediction.sort(key=lambda a: -a[1])
+            predictions.append(prediction[0][0])
+    with open(testFile + ".out", "w") as f:
+        f.write("\n".join(predictions))
+    analysis.main(testFile)
+
+    # Run Model on Development Set
     predictions = []
     testFile = "test.txt" if options.test else "dev.txt"
     with open(testFile) as f:
@@ -41,10 +54,10 @@ def main():
                 print("LINE: " + line)
             predictions.append(prediction[0][0])
 
-    with open("results.txt", "w") as f:
+    with open(testFile + ".out", "w") as f:
         f.write("\n".join(predictions))
 
-    print("Check results.txt for the prediction results.")
+    print("Check " + testFile + ".out for the prediction results.")
 
     # Calculate the Precision and Recall
     analysis.main(testFile)
