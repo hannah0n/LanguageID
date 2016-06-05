@@ -16,27 +16,34 @@ def loadOptions():
             action="store_true")
     parser.add_option("-t", "--test", help="run against test data",
             action="store_true")
+    parser.add_option("-s", "--stage", metavar="SIZE",
+            help="which stage to run (default is 1)",
+            default=1, type="int")
+    parser.add_option("-n", "--N", metavar="SIZE",
+            help="Number of high frequency words to keep track of (default is 1000)",
+            default=1000, type="int")
     return parser.parse_args()
 
 def main():
     options, args = loadOptions()
     # Train & Develop Model
-    models = {}
-    totalCount = {}
-    prob = {}
-    for lang in langs:
-        models[lang] = {}
-        totalCount[lang] = 0
+    s1models = {l:{} for l in langs}
+    totalCount = {l:0 for l in langs}
     prob = totalCount
-    train(models, totalCount)
+    train(s1models, totalCount)
+    if options.stage == 2:
+        s2models = trainFreqWords(options.N)
 
     # Run Model on Training Set
     predictions = []
     testFile = "training.txt"
     with open(testFile) as f:
         for line in f:
-            prediction = predict(line.split("\t", 1)[1], models, prob)
-            prediction.sort(key=lambda a: -a[1])
+            line = line.split("\t", 1)[1]
+            if options.stage == 2:
+                prediction = predict2(line, s1models, s2models)
+            else:
+                prediction = predict(line, s1models, prob)
             predictions.append(prediction[0][0])
     with open(testFile + ".out", "w") as f:
         f.write("\n".join(predictions))
@@ -47,12 +54,18 @@ def main():
     testFile = "test.txt" if options.test else "dev.txt"
     with open(testFile) as f:
         for line in f.readlines():
-            prediction = predict(line.split("\t", 1)[1], models, prob)
-            prediction.sort(key=lambda a: -a[1])
+            line = line.split("\t", 1)[1]
+            if options.stage == 2:
+                prediction = predict2(line, s1models, s2models)
+            else:
+                prediction = predict(line, s1models, prob)
             if options.verbose:
                 print("PREDICTION:", prediction)
                 print("LINE: " + line)
             predictions.append(prediction[0][0])
+#             p1Sum = sum([l[1] for l in prediction])
+#             if p1Sum == 0:
+#                 print("Got a 0! Not representable!")
 
     with open(testFile + ".out", "w") as f:
         f.write("\n".join(predictions))
@@ -64,11 +77,61 @@ def main():
 
     if options.interactive:
         while True:
-            line = raw_input("Line to parse: ")
-            prediction = predict(line, models, prob)
-            prediction.sort(key=lambda a: -a[1])
-            for p in prediction:
-                print('  %s : %.3e' % p)
+            try:
+                line = raw_input("Line to parse: ")
+            except EOFError:
+                print("\nShutting Down...")
+                break
+            if options.stage == 2:
+                prediction = predict2(line, s1models, s2models)
+            else:
+                prediction = predict(line, s1models, prob)
+            sum_prob = sum([p[1] for p in prediction])
+            for l, p in prediction:
+                print('  %s : %.2f%%' % (l, p * 100 / sum_prob))
+
+        # This code was used for parameter tuning
+# #     if True:
+# #         return
+# #     weights=[0.85, 0.8, .75, 0.7, 0.65, 0.6, 0.55, 0.5]
+#     weights = [0.01, 0.001, 0]
+# #     weights=[0.5]
+#     Ns = [10000, 100000]
+#     data = {n:{w:{} for w in weights} for n in Ns}
+#     for n in Ns:
+#         for w in weights:
+#             s1models = {l:{} for l in langs}
+#             totalCount = {l:0 for l in langs}
+#             prob = totalCount
+#             print("Testing N = %d \t w = %f " % (n, w))
+#             train(s1models, totalCount)
+#             s2models = trainFreqWords(n)
+#             predictions = []
+#             testFile = "training.txt"
+#             with open(testFile) as f:
+#                 for line in f:
+#                     line = line.split("\t", 1)[1]
+#                     prediction = predict2(line, s1models, s2models, w)
+#                     predictions.append(prediction[0][0])
+#             with open(testFile + ".out", "w") as f:
+#                 f.write("\n".join(predictions))
+#             predictions = []
+#             testFile = "dev.txt"
+#             data[n][w]["train"] = analysis.main(testFile)
+#             with open(testFile) as f:
+#                 for line in f.readlines():
+#                     line = line.split("\t", 1)[1]
+#                     prediction = predict2(line, s1models, s2models, w)
+#                     predictions.append(prediction[0][0])
+#             with open(testFile + ".out", "w") as f:
+#                 f.write("\n".join(predictions))
+#             data[n][w]["dev"] = analysis.main(testFile)
+#     
+#     for n in Ns:
+#         for w in weights:
+#             print("N = %d \t w = %.3f \t train = %.3f \t dev = %.3f" %(n, w,
+#                 data[n][w]["train"], data[n][w]["dev"]))
+# 
 
 
 def train(models, totalCount):
@@ -117,17 +180,42 @@ def train(models, totalCount):
 #             print("  %s: %f" % (c, p))
         #Train data
 
-def probability(line, models):
+# Returns a model for high frequency words in each language
+def trainFreqWords(N = 1000):
     """
-    This function returns the probability of the given line using the model.
+    This function creates a unigram word frequency model for each language using
+    the top N words and leaving the rest as UNK.
+    """
+    tally = {l:{} for l in langs}
+    with open("training.txt") as f:
+        for inline in f.readlines():
+            lang, line = inline.split("\t", 1)
+            for word in line.split():
+                if word in tally[lang]:
+                    tally[lang][word] += 1
+                else:
+                    tally[lang][word] = 1
+    
+    for lang in tally:
+        d = tally[lang]
+        # Save the ten most popular words
+        tally[lang] = dict(sorted(d.items(), key=lambda (k,v): -v)[0:N+1])
+        totalCount = sum(tally[lang].values())
+        for w in tally[lang]:
+            tally[lang][w] = tally[lang][w] / float(totalCount);
+        minVal = min(tally[lang].values())
+        del tally[lang][sorted(tally[lang].keys(), key=lambda k: tally[lang][k])[0]]
+        tally[lang]["_UNK_"] = minVal
 
-    Keyword arguments:
-    line -- the line to calculate the probability on 
-    model -- the model to us
+#     for l, m in tally.items():
+#         print("LANG: " + l)
+#         print(sum(m.values()))
+#         for c, p in sorted(m.items(), key=lambda(k,v):-v):
+#             print("  %s: %.2f%%" % (c, p * 100))
+# 
+#     sys.exit()
 
-    Returns the probability of the given line being represented by the given model.
-    ;5"""
-    pass
+    return tally
 
 def predict(line, models, prob):
     """
@@ -147,7 +235,36 @@ def predict(line, models, prob):
             else:
                 num *= models[lang]["UNK"]
         prob[lang] = num
-    return prob.items()
+    return sorted(prob.items(), key=lambda (k, v): -v)
+
+import math
+def predict2(line, s1models, s2models, s2weight=0.75):
+    """
+    This function predicts the language for the given line using the models
+    developed for stage 1 and 2.
+
+    Returns a probability dictionary mapping language to probability
+    """
+    p1 = {l:1.0 for l in langs}
+    p2 = {l:1.0 for l in langs}
+    predict(line, s1models, p1)
+    for lang in s1models:
+        for w in line.split():
+            w = w if w in s2models[lang] else "_UNK_"
+            p2[lang] *= s2models[lang][w]
+
+    """ First, let's calculate the relative probability of one language to
+    the other in both models then combine them"""
+    p1Sum = sum(p1.values())
+    p2Sum = sum(p2.values())
+    if p1Sum == 0: p1Sum = 1
+    if p2Sum == 0: p2Sum = 1
+    p1 = {l: p * 100 /  p1Sum for l, p in p1.items()}
+    p2 = {l:p * 100 / p2Sum for l, p in p2.items()}
+    p = {l:p1[l] * (1 - s2weight) + p2[l] * s2weight for l in langs}
+
+    return sorted(p.items(), key=lambda (k, v): -v)
+
 
 if __name__ == "__main__":
     main()
