@@ -16,6 +16,8 @@ def loadOptions():
             action="store_true")
     parser.add_option("-t", "--test", help="run against test data",
             action="store_true")
+    parser.add_option("-x", "--tag", help="Include tagalog as part of P/R calculation",
+            action="store_true")
     parser.add_option("-s", "--stage", metavar="SIZE",
             help="which stage to run (default is 1)",
             default=1, type="int")
@@ -47,25 +49,23 @@ def main():
             predictions.append(prediction[0][0])
     with open(testFile + ".out", "w") as f:
         f.write("\n".join(predictions))
-    analysis.main(testFile)
+    analysis.main(testFile, ignoretl = not options.tag and options.test)
 
     # Run Model on Development Set
     predictions = []
     testFile = "test.txt" if options.test else "dev.txt"
     with open(testFile) as f:
         for line in f.readlines():
-            line = line.split("\t", 1)[1]
+            key, line = line.split("\t", 1)
             if options.stage == 2:
-                prediction = predict2(line, s1models, s2models)
+                prediction = predict2(line, s1models, s2models,
+                        includetl=options.tag)
             else:
                 prediction = predict(line, s1models, prob)
             if options.verbose:
                 print("PREDICTION:", prediction)
                 print("LINE: " + line)
             predictions.append(prediction[0][0])
-#             p1Sum = sum([l[1] for l in prediction])
-#             if p1Sum == 0:
-#                 print("Got a 0! Not representable!")
 
     with open(testFile + ".out", "w") as f:
         f.write("\n".join(predictions))
@@ -73,7 +73,7 @@ def main():
     print("Check " + testFile + ".out for the prediction results.")
 
     # Calculate the Precision and Recall
-    analysis.main(testFile)
+    analysis.main(testFile, ignoretl = not options.tag and options.test)
 
     if options.interactive:
         while True:
@@ -83,7 +83,8 @@ def main():
                 print("\nShutting Down...")
                 break
             if options.stage == 2:
-                prediction = predict2(line, s1models, s2models)
+                prediction = predict2(line, s1models, s2models,
+                        includetl=options.tl)
             else:
                 prediction = predict(line, s1models, prob)
             sum_prob = sum([p[1] for p in prediction])
@@ -181,7 +182,7 @@ def train(models, totalCount):
         #Train data
 
 # Returns a model for high frequency words in each language
-def trainFreqWords(N = 1000):
+def trainFreqWords(N = 10000):
     """
     This function creates a unigram word frequency model for each language using
     the top N words and leaving the rest as UNK.
@@ -226,7 +227,7 @@ def predict(line, models, prob):
 
     Returns the most likely language
     """
-    script= line.strip().replace("\t", "").replace(" ", "")
+    script= line.lower().strip().replace("\t", "").replace(" ", "")
     for lang in models:
         num = 1.0
         for char in script:
@@ -238,7 +239,7 @@ def predict(line, models, prob):
     return sorted(prob.items(), key=lambda (k, v): -v)
 
 import math
-def predict2(line, s1models, s2models, s2weight=0.75):
+def predict2(line, s1models, s2models, s2weight=0.75, includetl=False):
     """
     This function predicts the language for the given line using the models
     developed for stage 1 and 2.
@@ -253,15 +254,27 @@ def predict2(line, s1models, s2models, s2weight=0.75):
             w = w if w in s2models[lang] else "_UNK_"
             p2[lang] *= s2models[lang][w]
 
+
     """ First, let's calculate the relative probability of one language to
     the other in both models then combine them"""
     p1Sum = sum(p1.values())
     p2Sum = sum(p2.values())
+    emptycount = 0
+    for p in p1.values():
+        if p == 0:
+            emptycount += 1
+#             print(p1.values())
+
+    # The characters multiplied together gave a low probability.
+    if includetl and emptycount > 13:
+        return [("tl", 1.0)]
+
     if p1Sum == 0: p1Sum = 1
     if p2Sum == 0: p2Sum = 1
     p1 = {l: p * 100 /  p1Sum for l, p in p1.items()}
     p2 = {l:p * 100 / p2Sum for l, p in p2.items()}
     p = {l:p1[l] * (1 - s2weight) + p2[l] * s2weight for l in langs}
+
 
     return sorted(p.items(), key=lambda (k, v): -v)
 

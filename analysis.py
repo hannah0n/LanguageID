@@ -86,7 +86,6 @@ def main(testFile="dev.txt", resultsFile=None, ignoretl=True):
     print("Weighted Average Precision: %.3f" % weighted_precision)
     print("Weighted Average Recall: %.3f" % weighted_recall)
     print("Weighted Average F1 Score: %.3f\n" % weighted_f1)
-    return weighted_f1
 
     # Precision/Recall calculations for language groups
     print("       \t   Prec. \tRecall \tF1 Score")
@@ -128,6 +127,7 @@ def main(testFile="dev.txt", resultsFile=None, ignoretl=True):
                 space = " " * (7 - len(str(percent)))
                 printstr += str(percent) + "%" + space
         print(printstr)
+    return weighted_f1
 
 if __name__ == "__main__":
     main(raw_input("KEY file: "), raw_input("PREDICTIONS file: "))
