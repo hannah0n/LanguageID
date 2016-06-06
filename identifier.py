@@ -1,7 +1,7 @@
 # This is the program that learns using N-grams and identifies the language of
 # each of the development set
 
-import sys, re, os, analysis, operator
+import sys, re, os, analysis, operator, math
 from optparse import OptionParser
 
 langs = "ca da de en es fr is it la nl no pt ro sv".split()
@@ -16,14 +16,15 @@ def loadOptions():
             action="store_true")
     parser.add_option("-t", "--test", help="run against test data",
             action="store_true")
-    parser.add_option("-x", "--tag", help="Include tagalog as part of P/R calculation",
+    parser.add_option("-x", "--notag", help="Don't include tagalog as part of"
+            " P/R calculation for the test set",
             action="store_true")
     parser.add_option("-s", "--stage", metavar="SIZE",
             help="which stage to run (default is 1)",
             default=1, type="int")
     parser.add_option("-n", "--N", metavar="SIZE",
-            help="Number of high frequency words to keep track of (default is 1000)",
-            default=1000, type="int")
+            help="Number of high frequency words to keep track of (default is 5000)",
+            default=5000, type="int")
     return parser.parse_args()
 
 def main():
@@ -43,13 +44,14 @@ def main():
         for line in f:
             line = line.split("\t", 1)[1]
             if options.stage == 2:
-                prediction = predict2(line, s1models, s2models)
+                prediction = predict2(line, s1models, s2models, includetl=not
+                        options.notag)
             else:
                 prediction = predict(line, s1models, prob)
             predictions.append(prediction[0][0])
     with open(testFile + ".out", "w") as f:
         f.write("\n".join(predictions))
-    analysis.main(testFile, ignoretl = not options.tag and options.test)
+    analysis.main(testFile, ignoretl = options.notag or not options.test)
 
     # Run Model on Development Set
     predictions = []
@@ -59,7 +61,7 @@ def main():
             key, line = line.split("\t", 1)
             if options.stage == 2:
                 prediction = predict2(line, s1models, s2models,
-                        includetl=options.tag)
+                        includetl=not options.notag)
             else:
                 prediction = predict(line, s1models, prob)
             if options.verbose:
@@ -73,7 +75,7 @@ def main():
     print("Check " + testFile + ".out for the prediction results.")
 
     # Calculate the Precision and Recall
-    analysis.main(testFile, ignoretl = not options.tag and options.test)
+    analysis.main(testFile, ignoretl = options.notag or not options.test)
 
     if options.interactive:
         while True:
@@ -84,7 +86,7 @@ def main():
                 break
             if options.stage == 2:
                 prediction = predict2(line, s1models, s2models,
-                        includetl=options.tl)
+                        includetl= not options.notag)
             else:
                 prediction = predict(line, s1models, prob)
             sum_prob = sum([p[1] for p in prediction])
@@ -227,7 +229,7 @@ def predict(line, models, prob):
 
     Returns the most likely language
     """
-    script= line.lower().strip().replace("\t", "").replace(" ", "")
+    script= line.strip().replace("\t", "").replace(" ", "")
     for lang in models:
         num = 1.0
         for char in script:
@@ -238,7 +240,6 @@ def predict(line, models, prob):
         prob[lang] = num
     return sorted(prob.items(), key=lambda (k, v): -v)
 
-import math
 def predict2(line, s1models, s2models, s2weight=0.75, includetl=False):
     """
     This function predicts the language for the given line using the models
@@ -249,11 +250,20 @@ def predict2(line, s1models, s2models, s2weight=0.75, includetl=False):
     p1 = {l:1.0 for l in langs}
     p2 = {l:1.0 for l in langs}
     predict(line, s1models, p1)
+    totalunkcount = 0
     for lang in s1models:
+        unkcount = 0
         for w in line.split():
+            if w not in s2models[lang]:
+                unkcount += 1
             w = w if w in s2models[lang] else "_UNK_"
             p2[lang] *= s2models[lang][w]
+        totalunkcount += unkcount
 
+    # In other words, on average none of the models knew 13/14 words
+    if includetl:
+        if (totalunkcount > 13 * len(line.split())):
+            return [("tl", 1.0)]
 
     """ First, let's calculate the relative probability of one language to
     the other in both models then combine them"""
@@ -266,8 +276,8 @@ def predict2(line, s1models, s2models, s2weight=0.75, includetl=False):
 #             print(p1.values())
 
     # The characters multiplied together gave a low probability.
-    if includetl and emptycount > 13:
-        return [("tl", 1.0)]
+#     if includetl and emptycount > 13:
+#         return [("tl", 1.0)]
 
     if p1Sum == 0: p1Sum = 1
     if p2Sum == 0: p2Sum = 1
