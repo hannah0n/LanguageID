@@ -119,11 +119,11 @@ def main(testFile="dev.txt", resultsFile=None, ignoretl=True):
             if counts[i] == 0:
                 pass
             elif i == j:
-                percent = (round((langs[i]["TP"]) / counts[i] * 1000)) / 10
+                percent = (round((langs[i]["TP"]) / counts[i] * 10000)) / 100
                 space = "\t" #* (7 - len(str(percent)))
                 printstr += str(percent) + "%" + space
             else:
-                percent = (round((matrix[i][j]) / counts[i] * 1000)) / 10
+                percent = (round((matrix[i][j]) / counts[i] * 10000)) / 100
                 space = "\t" #* (7 - len(str(percent)))
                 printstr += str(percent) + "%" + space
         print(printstr)
