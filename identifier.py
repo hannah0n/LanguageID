@@ -6,6 +6,12 @@ from optparse import OptionParser
 
 langs = "ca da de en es fr is it la nl no pt ro sv".split()
 
+def langMap(fn = lambda l: 0.0):
+  d = {}
+  for l in langs:
+    d[l] = fn(l)
+  return d
+
 def loadOptions():
     """Sets up the command line options"""
     parser = OptionParser(usage="usage %prog [options]")
@@ -19,7 +25,7 @@ def loadOptions():
     parser.add_option("-x", "--notag", help="Don't include tagalog as part of"
             " P/R calculation for the test set",
             action="store_true")
-    parser.add_option("-s", "--stage", metavar="SIZE",
+    parser.add_option("-s", "--stage", metavar="STAGE",
             help="which stage to run (default is 1)",
             default=1, type="int")
     parser.add_option("-n", "--N", metavar="SIZE",
@@ -30,8 +36,8 @@ def loadOptions():
 def main():
     options, args = loadOptions()
     # Train & Develop Model
-    s1models = {l:{} for l in langs}
-    totalCount = {l:0 for l in langs}
+    s1models = langMap(lambda l: {})
+    totalCount = langMap()
     prob = totalCount
     train(s1models, totalCount)
     if options.stage == 2:
@@ -80,7 +86,7 @@ def main():
     if options.interactive:
         while True:
             try:
-                line = raw_input("Line to parse: ")
+                line = raw_input("Line to parse (or Ctrl-D to shut down): ")
             except EOFError:
                 print("\nShutting Down...")
                 break
@@ -149,7 +155,7 @@ def train(models, totalCount):
     # Example: if the training set for the language had 10000 characters and
     # 1000 of them were the letter 'e' then P(e) = 0.1 for this language and the
     # dictionary returned would store the value 1000 for the key 'e'
-
+#     letters = set(["UNK"])
     with open("training.txt") as f:
         # be sure to skip any whitespace characters
         for line in f.readlines():
@@ -161,11 +167,20 @@ def train(models, totalCount):
             else:
                 unigram = models.get(language)
             for cha in script:
+#                 letters.add(cha)
                 if cha in unigram:
                     unigram[cha] += 1
                 else:
                     unigram[cha] = 1
                 totalCount[language] += 1
+    
+#     for l, d in models.items():
+#       for c in letters:
+#         if c in d:
+#           d[c] += 1
+#         else:
+#           d[c] = 1
+#       totalCount[l] += len(letters)
 
     for l in models:
         for c in models[l]:
@@ -175,21 +190,13 @@ def train(models, totalCount):
         models[l]["UNK"] = models[l][sortedlist[0]]
         del models[l][sortedlist[0]]
 
-
-#     for l, m in models.iteritems():
-#         print("LANG: " + l)
-#         print(sum(m.values()))
-#         for c, p in m.iteritems():
-#             print("  %s: %f" % (c, p))
-        #Train data
-
 # Returns a model for high frequency words in each language
 def trainFreqWords(N = 10000):
     """
     This function creates a unigram word frequency model for each language using
     the top N words and leaving the rest as UNK.
     """
-    tally = {l:{} for l in langs}
+    tally = langMap(lambda l:{})
     with open("training.txt") as f:
         for inline in f.readlines():
             lang, line = inline.split("\t", 1)
@@ -201,7 +208,7 @@ def trainFreqWords(N = 10000):
     
     for lang in tally:
         d = tally[lang]
-        # Save the ten most popular words
+        # Save the N most popular words
         tally[lang] = dict(sorted(d.items(), key=lambda (k,v): -v)[0:N+1])
         totalCount = sum(tally[lang].values())
         for w in tally[lang]:
@@ -247,8 +254,8 @@ def predict2(line, s1models, s2models, s2weight=0.75, includetl=False):
 
     Returns a probability dictionary mapping language to probability
     """
-    p1 = {l:1.0 for l in langs}
-    p2 = {l:1.0 for l in langs}
+    p1 = langMap(lambda l: 1.0)
+    p2 = langMap(lambda l: 1.0)
     predict(line, s1models, p1)
     totalunkcount = 0
     for lang in s1models:
@@ -281,9 +288,19 @@ def predict2(line, s1models, s2models, s2weight=0.75, includetl=False):
 
     if p1Sum == 0: p1Sum = 1
     if p2Sum == 0: p2Sum = 1
-    p1 = {l: p * 100 /  p1Sum for l, p in p1.items()}
-    p2 = {l:p * 100 / p2Sum for l, p in p2.items()}
-    p = {l:p1[l] * (1 - s2weight) + p2[l] * s2weight for l in langs}
+    p = langMap()
+    for l, pr1 in p1.items(): 
+      p1[l] = pr1 * 100 / p1Sum
+
+    for l, pr2 in p2.items(): 
+      p2[l] = pr2 * 100 / p2Sum
+
+    for l in langs: 
+      p[l] = p1[l] * (1 - s2weight) + p2[l] * s2weight
+
+#     p1 = {l: p * 100 /  p1Sum for l, p in p1.items()}
+#     p2 = {l:p * 100 / p2Sum for l, p in p2.items()}
+#     p = {l: for l in langs}
 
 
     return sorted(p.items(), key=lambda (k, v): -v)

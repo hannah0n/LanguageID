@@ -110,7 +110,7 @@ def main(testFile="dev.txt", resultsFile=None, ignoretl=True):
 
     predicted = "\t"
     for i in matrix:
-        predicted = predicted + i + "      "
+        predicted = predicted + i + "\t"
     print(predicted)
 
     for i in matrix.keys():
@@ -119,12 +119,12 @@ def main(testFile="dev.txt", resultsFile=None, ignoretl=True):
             if counts[i] == 0:
                 pass
             elif i == j:
-                percent = (round((langs[i]["TP"]) / counts[i] * 10000)) / 100
-                space = " " * (7 - len(str(percent)))
+                percent = (round((langs[i]["TP"]) / counts[i] * 1000)) / 10
+                space = "\t" #* (7 - len(str(percent)))
                 printstr += str(percent) + "%" + space
             else:
-                percent = (round((matrix[i][j]) / counts[i] * 10000)) / 100
-                space = " " * (7 - len(str(percent)))
+                percent = (round((matrix[i][j]) / counts[i] * 1000)) / 10
+                space = "\t" #* (7 - len(str(percent)))
                 printstr += str(percent) + "%" + space
         print(printstr)
     return weighted_f1
